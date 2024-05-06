@@ -1,12 +1,13 @@
-from scapy.all import IP, TCP, UDP, send
+from scapy.layers.inet import IP, UDP, TCP
+import scapy.all as scapy
 
 # Source IP and port
-src_ip =
-src_port =
+src_ip = '169.254.5.236'
+src_port = 60908
 
 # Destination IP and port
-dst_ip =
-dst_port =
+dst_ip = '169.254.62.118'
+dst_port = 12345
 
 # Craft the IP segment of the packet with custom source and destination
 ip_segment = IP(src=src_ip, dst=dst_ip)
@@ -32,7 +33,7 @@ crafted_packet = ip_segment / udp_segment/ payload'''
 
 
 
-send(crafted_packet)
+scapy.all.send(crafted_packet)
 
 
 
